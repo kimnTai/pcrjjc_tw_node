@@ -1,0 +1,19 @@
+{
+  "name": "pcrjjc_tw_node",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.2",
+    "vite": "^4.3.9",
+    "vite-plugin-fs": "^1.0.0-beta.6"
+  },
+  "dependencies": {
+    "buffer": "^6.0.3"
+  }
+}
