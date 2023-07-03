@@ -9,4 +9,13 @@ export default defineConfig({
       "@": join(__dirname, "src"),
     },
   },
+  server: {
+    proxy: {
+      "/apk": {
+        target: "https://apk-dl.com",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/apk/, ""),
+      },
+    },
+  },
 });
