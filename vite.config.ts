@@ -16,6 +16,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/apk/, ""),
       },
+      "/game": {
+        target: "https://api-pc.so-net.tw",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/game/, ""),
+      },
     },
   },
 });
