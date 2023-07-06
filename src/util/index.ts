@@ -20,7 +20,7 @@ async function getApkVersion() {
 }
 
 export async function getHeaders() {
-  const apkVersion = await getApkVersion();
+  const apkVersion = "4.0.1";
   const headers = {
     "Accept-Encoding": "deflate, gzip",
     "User-Agent":
@@ -54,7 +54,7 @@ export function getSID(data: string) {
   return hashedData;
 }
 
-export function getIV(UDID: string) {
+export function getIV(UDID: string = "b66ffd86-93f6-4681-9f37-36b61091b6ce") {
   return CryptoJS.enc.Utf8.parse(UDID.replace(/-/g, "").slice(0, 16));
 }
 
@@ -84,4 +84,28 @@ export function encrypt(param: {
   const keyBytes = CryptoJS.enc.Hex.parse(param.key.toString());
   const encryptedData = encryptedBytes.concat(keyBytes);
   return CryptoJS.enc.Base64.stringify(encryptedData);
+}
+
+export function encode(dat: string) {
+  const alphabet = "0123456789";
+  const len = dat.length.toString(16).padStart(4, "0");
+  let encodedString = len;
+  for (let i = 0; i < dat.length; i++) {
+    if (i % 4 === 2) {
+      encodedString += String.fromCharCode(dat.charCodeAt(i) + 10);
+    } else {
+      encodedString += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+  }
+  function ivString() {
+    const alphabet = "0123456789";
+    let result = "";
+    for (let i = 0; i < 32; i++) {
+      result += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+    return result;
+  }
+
+  encodedString += ivString();
+  return encodedString;
 }

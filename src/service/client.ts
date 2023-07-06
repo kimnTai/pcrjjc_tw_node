@@ -1,7 +1,8 @@
-import { createKey, encrypt, getHeaders, getIV, getSID } from "@/util";
+import { createKey, encode, encrypt, getHeaders, getIV, getSID } from "@/util";
 import CryptoJS from "crypto-js";
 import msgpack from "msgpack-lite";
-import { Base64 } from "js-base64";
+import { Buffer } from "buffer";
+import base64 from "base64-js";
 
 export default class Client {
   rootUrl = "/game";
@@ -18,7 +19,7 @@ export default class Client {
       this.rootUrl = "https://api5-pc.so-net.tw";
     }
 
-    this.callApi();
+    this.callApi("/check/check_agreement", {});
   }
 
   packData(data: any, key: CryptoJS.lib.WordArray) {
@@ -51,43 +52,43 @@ export default class Client {
       }),
     };
 
-    const [packed] = this.packData(request, key);
+    const [packed, crypto] = this.packData(request, key);
 
-    // const headers = {
-    //   ...(await getHeaders()),
-    //   "SHORT-UDID": `${this.param?.SHORT_UDID_lowBits}`,
-    //   SID: getSID(`${this.param?.VIEWER_ID_lowBits}${this.param?.UDID}`),
-    //   PARAM: CryptoJS.SHA1(
-    //     this.param?.UDID + url + packed + this.param?.VIEWER_ID_lowBits
-    //   ).toString(),
-    // };
+    const headers = {
+      ...(await getHeaders()),
+      "SHORT-UDID": encode(`${this.param?.SHORT_UDID_lowBits}`),
+      SID: getSID(`${this.param?.VIEWER_ID_lowBits}${this.param?.UDID}`),
+      PARAM: CryptoJS.SHA1(
+        this.param?.UDID + url + packed + this.param?.VIEWER_ID_lowBits
+      ).toString(),
+    };
 
     // const res = await fetch(`${this.rootUrl}${url}`, {
     //   method: "POST",
     //   headers,
     //   body: crypto,
-    // }).then((_res) => _res.arrayBuffer());
+    // }).then((_res) => _res.text());
 
-    const res =
-      "L/hqd19MPSwywpi5yLW9h21MOFEFrqsTFqJqddHLpo97xwkdvoOEY9KCFsf55f53iJgtCixQvBtheuRypJ9yKNEoSvj4xjr7SrQ/6CkiFEI2YmY0NDk1N2QwMjc2NTJkNDU3MjJlZjU0OGVmNTFkNw==";
+    const _res =
+      "tX+JLJfOkV8Flzy0c7VUdF8nYep5WqMy1piAT5EcmvJQ0SQhMEOUibcfE1gMaCoF2r2W1FNQqESwDBTOZDgojezhdK+9tHrxmwRFC+0NxYM5NmExMjRiMTQ3NTBiM2E4ZjUzNGRhMjAxODdiMjIwYQ==";
 
-    this.unpack(res);
+    this.unpack(_res);
   }
 
   //TODO res 解不出來
   unpack(data: string) {
-    const decodedData = Base64.decode(data);
-    console.log(decodedData, decodedData.slice(-32));
+    data = window.atob(data);
 
-    const key = CryptoJS.enc.Hex.parse(decodedData.slice(-32));
+    const key = data.slice(-32);
 
-    const encryptedData = CryptoJS.enc.Hex.parse(decodedData.slice(0, -32));
-    const decrypted = CryptoJS.AES.decrypt({ ciphertext: encryptedData }, key, {
+    const encryptedData = data.slice(0, -32);
+
+    const decrypted = CryptoJS.AES.decrypt(encryptedData, key, {
       iv: getIV(`${this.param?.UDID}`),
       mode: CryptoJS.mode.CBC,
       padding: CryptoJS.pad.Pkcs7,
     });
 
-    //return msgpack.decode(Buffer.from(unpaddedBytes.toString(), "hex"));
+    console.log(decrypted.toString(CryptoJS.enc.Utf8));
   }
 }
