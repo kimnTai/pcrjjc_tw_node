@@ -2,7 +2,7 @@ import { createKey, encode, encrypt, getHeaders, getIV, getSID } from "@/util";
 import CryptoJS from "crypto-js";
 import msgpack from "msgpack-lite";
 import { Buffer } from "buffer";
-import base64 from "base64-js";
+import aesjs from "aes-js";
 
 export default class Client {
   rootUrl = "/game";
@@ -56,39 +56,45 @@ export default class Client {
 
     const headers = {
       ...(await getHeaders()),
-      "SHORT-UDID": encode(`${this.param?.SHORT_UDID_lowBits}`),
+      "SHORT-UDID": `${this.param?.SHORT_UDID_lowBits}`,
       SID: getSID(`${this.param?.VIEWER_ID_lowBits}${this.param?.UDID}`),
       PARAM: CryptoJS.SHA1(
         this.param?.UDID + url + packed + this.param?.VIEWER_ID_lowBits
       ).toString(),
     };
 
-    // const res = await fetch(`${this.rootUrl}${url}`, {
-    //   method: "POST",
-    //   headers,
-    //   body: crypto,
-    // }).then((_res) => _res.text());
+    const res = await fetch(`${this.rootUrl}${url}`, {
+      method: "POST",
+      headers,
+      body: crypto,
+    }).then((_res) => _res.text());
 
-    const _res =
-      "tX+JLJfOkV8Flzy0c7VUdF8nYep5WqMy1piAT5EcmvJQ0SQhMEOUibcfE1gMaCoF2r2W1FNQqESwDBTOZDgojezhdK+9tHrxmwRFC+0NxYM5NmExMjRiMTQ3NTBiM2E4ZjUzNGRhMjAxODdiMjIwYQ==";
-
-    this.unpack(_res);
+    this.unpack(res);
   }
 
-  //TODO res 解不出來
   unpack(data: string) {
-    data = window.atob(data);
+    const res = Buffer.from(data, "base64");
 
-    const key = data.slice(-32);
+    const aesBody = res.subarray(0, res.length - 32);
+    const aesKey = res.subarray(res.length - 32, res.length);
 
-    const encryptedData = data.slice(0, -32);
+    const noopIV = [
+      0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      0x00, 0x00, 0x00, 0x00,
+    ];
 
-    const decrypted = CryptoJS.AES.decrypt(encryptedData, key, {
-      iv: getIV(`${this.param?.UDID}`),
-      mode: CryptoJS.mode.CBC,
-      padding: CryptoJS.pad.Pkcs7,
-    });
+    const rawBody = new aesjs.ModeOfOperation.cbc(aesKey, noopIV).decrypt(
+      aesBody
+    );
+    const body = rawBody.subarray(
+      0,
+      rawBody.length - rawBody[rawBody.length - 1]
+    );
 
-    console.log(decrypted.toString(CryptoJS.enc.Utf8));
+    const pack = msgpack.decode(body);
+    // result code 209
+    console.log(pack);
+
+    return pack;
   }
 }

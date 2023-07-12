@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/aes-js": "^3.1.1",
     "@types/crypto-js": "^4.1.1",
     "@types/msgpack-lite": "^0.1.8",
     "typescript": "^5.0.2",
@@ -16,6 +17,7 @@
     "vite-plugin-fs": "^1.0.0-beta.6"
   },
   "dependencies": {
+    "aes-js": "^3.1.2",
     "buffer": "^6.0.3",
     "cheerio": "^1.0.0-rc.12",
     "crypto-js": "^4.1.1",

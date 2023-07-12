@@ -87,20 +87,23 @@ export function encrypt(param: {
 }
 
 export function encode(dat: string) {
-  const alphabet = "0123456789";
   const len = dat.length.toString(16).padStart(4, "0");
+
   let encodedString = len;
   for (let i = 0; i < dat.length; i++) {
     if (i % 4 === 2) {
       encodedString += String.fromCharCode(dat.charCodeAt(i) + 10);
     } else {
+      const alphabet = "0123456789";
       encodedString += alphabet[Math.floor(Math.random() * alphabet.length)];
     }
   }
+  encodedString += ";";
+
   function ivString() {
-    const alphabet = "0123456789";
     let result = "";
     for (let i = 0; i < 32; i++) {
+      const alphabet = "0123456789";
       result += alphabet[Math.floor(Math.random() * alphabet.length)];
     }
     return result;
